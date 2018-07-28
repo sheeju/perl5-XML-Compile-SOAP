@@ -156,6 +156,15 @@ sub compileHandler(@)
         }
 
         my $answer = $callback->($self, $data, $session);
+
+        #For SOAP 1.2 $answer returns XML::LibXML::Document object
+        #This is used for faultNotImplemented callback
+        if(ref($answer) eq 'XML::LibXML::Document') {
+            notice __x"procedure {name} is LibXML doc", name => $name;
+            return ( RC_INTERNAL_SERVER_ERROR, 'invalid answer produced'
+                   , $self->faultNotImplemented($name));
+        }
+
         unless(defined $answer)
         {   notice __x"procedure {name} did not produce an answer", name=>$name;
             return ( RC_INTERNAL_SERVER_ERROR, 'no answer produced'
